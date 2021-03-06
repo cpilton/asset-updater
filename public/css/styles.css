@@ -1,0 +1,218 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    font-size: 16px;
+    font-family: proxima-soft, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+#banner {
+    height: 50px;
+    width: 100%;
+    background-color: #0176e7;
+    color: #fff;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+#banner .header {
+    padding: 7.5px 20px
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+#selection {
+    background-color: #006ad0;
+    padding: 20px;
+}
+
+#selected-path {
+    background-color: #f7f8fc;
+    padding: 20px;
+}
+
+#assets {
+    background-color: #fff;
+    padding: 20px;
+}
+
+.box {
+    border-radius: 10px;
+    background-color: #fff;
+    padding: 20px;
+    display: inline-block;
+    box-shadow: 0 3px 3px 1px rgba(0, 0, 0, 0.2);
+    vertical-align: top;
+}
+
+.box .header {
+    font-size: 18px;
+}
+
+.box#select-folder {
+    margin-right: 20px;
+    width: 305px;
+    height: 125px;
+}
+
+.box#recent-folders {
+    width: calc(100% - 435px);
+    height: 125px;
+}
+
+button {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: inline-block;
+    padding: 6px 11px;
+    cursor: pointer;
+    color: #333;
+}
+
+button#check-folder {
+    display: block;
+    width: 100%;
+    margin: 20px auto 0;
+}
+
+label {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.input {
+    width: 100%;
+}
+
+.input input {
+    width: calc(65% - 29px);
+}
+
+.input label {
+    width: calc(35% - 10px);
+}
+
+input[type="text"] {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 6px 11px;
+    margin: 20px auto 0;
+    outline: none;
+    display: inline-block;
+}
+
+input[type="text"]:focus {
+    border: 1px solid #aaa;
+}
+
+.button:hover {
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+    width: 26px;
+    height: 26px;
+    display: inline-block;
+    vertical-align: top;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#folder-icon {
+    background-image: url("/img/folder.svg");
+}
+
+.recent-path {
+    vertical-align: top;
+    margin-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: calc(100% - 110px);
+    display: inline-block;
+}
+
+.recent {
+    width: 100%;
+    position: relative;
+    padding: 5px 0;
+}
+
+.recent button {
+    vertical-align: top;
+    position: absolute;
+    right: 0;
+    top: 0
+}
+
+#selected-path-box {
+    width: calc(100% - 40px);
+}
+
+#pathname {
+    vertical-align: top;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#notify {
+    background-color: #FFF;
+    box-shadow: 0 3px 3px 1px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    padding: 20px;
+    transition: .5s;
+}
+
+#assets-box {
+    width: calc(40% - 50px);
+    margin-right: 20px;
+}
+
+#assets-content {
+    width: 100%;
+}
+
+#update-assets-box {
+    width: calc(60% - 55px);
+}
+
+.asset .icon {
+    background-size: 50%;
+}
+
+.asset[icon="loading"] .icon {
+    background-image: url("/img/loading.svg");
+    animation: spin 3s linear infinite;
+}
+
+.asset[icon="check"] .icon {
+    background-image: url("/img/check.svg");
+}
+
+.asset[icon="close"] .icon {
+    background-image: url("/img/close.svg");
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.asset .asset-name {
+    vertical-align: top;
+    display: inline-block;
+    margin-left: 10px;
+    width: calc(100% - 50px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

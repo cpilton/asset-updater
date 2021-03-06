@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://use.typekit.net/zkj5rjc.css">
+    <link href="css/styles.css" rel="stylesheet" type="text/css">
+    <link rel="preload" as="image" href="img/loading.svg">
+    <link rel="preload" as="image" href="img/close.svg">
+    <link rel="preload" as="image" href="img/check.svg">
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/global.js"></script>
+    <script src="js/updater.js"></script>
+    <title>Asset Updater</title>
+</head>
+<body>
+<div id="banner">
+    <div class="container">
+        <div class="header">Asset Updater</div>
+    </div>
+</div>
+<div id="selection">
+    <div class="container">
+        <div class="box" id="select-folder">
+            <div class="header">Select asset folder</div>
+            <div class="input">
+                <label for="asset-folder">Folder path</label>
+                <input type="text" id="asset-folder" placeholder="C:\Program Files\Cities Skylines\Files\Mods"/>
+            </div>
+            <button id="check-folder" onclick="checkFolder()">Check folder</button>
+        </div>
+        <div class="box" id="recent-folders">
+            <div class="header">Recent folders</div>
+            <div id="recent-folders-content"></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="selected-path">
+    <div class="container">
+        <div class="box" id="selected-path-box">
+            <div id="path"><div class="icon" id="folder-icon"></div><div id="pathname">No path selected</div></div>
+        </div>
+    </div>
+</div>
+
+<div id="assets">
+    <div class="container">
+        <div class="box" id="assets-box">
+            <div class="header">All Assets</div>
+            <div id="assets-content">No assets</div>
+        </div>
+        <div class="box" id="update-assets-box">
+            <div class="header">Assets with updates</div>
+            <div id="update-assets-content">No assets</div>
+        </div>
+    </div>
+</div>
+
+<div id="notify">
+    <div id="notify-message">test</div>
+</div>
+</body>
+</html>
