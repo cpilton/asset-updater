@@ -36,7 +36,170 @@ app.use(favicon(path.join(__dirname, 'public', 'img', 'logo.ico')));
 app.set('port', 3001);
 server.listen(app.get('port'));
 
+let connections = 0;
+
+io.on('connection', function(socket){
+    connections++;
+    socket.on('disconnect', function(){
+        connections--;
+        if (connections === 0) {
+            stopServer();
+        }
+    });
+});
+
+var sockets = {}, nextSocketId = 0;
+server.on('connection', function (socket) {
+    // Add a newly connected socket
+    var socketId = nextSocketId++;
+    sockets[socketId] = socket;
+
+    // Remove the socket when it closes
+    socket.on('close', function () {
+        delete sockets[socketId];
+    });
+
+    // Extend socket lifetime for demo purposes
+    socket.setTimeout(4000);
+});
+
+function stopServer() {
+    // Close the server
+    server.close(function () { console.log('Server closed!'); });
+    // Destroy all open sockets
+    for (var socketId in sockets) {
+        console.log('socket', socketId, 'destroyed');
+        sockets[socketId].destroy();
+    }
+}
+
+
 /** Functions */
+
+async function removeExistingFile(path) {
+    try {
+        await fs.unlinkSync(path);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+async function removeExistingFolder(dir) {
+    try {
+        await fs.rmdirSync(dir, {recursive: true});
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+async function extractFile(downloadPath, assetPath) {
+    try {
+        var zip = new AdmZip(downloadPath);
+        zip.extractAllTo(assetPath, true);
+        return true;
+    } catch (err) {
+        console.log(err)
+        return false;
+    }
+}
+
+async function handleFileWaiting(uuid) {
+    return new Promise((resolve, reject) => {
+        setTimeout(async function () {
+            resolve(await waitForDownloadSlot(uuid));
+        }, 250);
+    });
+}
+
+async function getFile(uuid, assetName) {
+    let url = 'https://backend-02-prd.' + downloader + 'api/download/transmit?uuid=' + uuid;
+    let path = __dirname + '/downloads/' + assetName + '.zip'
+
+    return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(path);
+        let fileInfo = null;
+
+        const request = https.get(url, response => {
+            if (response.statusCode !== 200) {
+                reject(`Failed to get '${url}' (${response.statusCode})`);
+                return;
+            }
+
+            fileInfo = {
+                mime: response.headers['content-type'],
+                size: parseInt(response.headers['content-length'], 10),
+            };
+
+            response.pipe(file);
+        });
+
+        // The destination stream is ended by the time it's called
+        file.on('finish', () => resolve(fileInfo));
+
+        request.on('error', err => {
+            fs.unlink(path, () => reject(err));
+        });
+
+        file.on('error', err => {
+            fs.unlink(path, () => reject(err));
+        });
+
+        request.end();
+    }).catch(function (error) {
+        console.log(error)
+        return false;
+    });
+}
+
+async function waitForDownloadSlot(uuid) {
+    let url = 'https://backend-02-prd.' + downloader + 'api/download/status';
+    let data = {"uuids": [uuid]};
+
+    const {body} = await got.post(url, {
+            json: data,
+            responseType: 'json'
+        }
+    );
+
+    if (body[uuid].progress === 200) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+async function getUuid(id) {
+    let url = 'https://backend-02-prd.' + downloader + 'api/download/request';
+    let data = {
+        "publishedFileId": parseInt(id),
+        "collectionId": null,
+        "extract": true,
+        "hidden": false,
+        "direct": false,
+        "autodownload": false
+    };
+
+    const {body} = await got.post(url, {
+            json: data,
+            responseType: 'json'
+        }
+    );
+
+    return body.uuid;
+}
+
+locateDownloader();
+
+var downloader;
+
+async function locateDownloader() {
+    var url = 'https://steamworkshopdownloader.io';
+
+    const response = await got(url);
+    downloader = response.url.replace('https://', '');
+}
 
 async function getUpdateDate(url) {
     try {
@@ -246,148 +409,3 @@ app.post("/api/updateAsset/", async function (req, res) {
 
     res.json({status: 200});
 });
-
-async function removeExistingFile(path) {
-    try {
-        await fs.unlinkSync(path);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-async function removeExistingFolder(dir) {
-    try {
-        await fs.rmdirSync(dir, {recursive: true});
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-async function extractFile(downloadPath, assetPath) {
-    try {
-        var zip = new AdmZip(downloadPath);
-        zip.extractAllTo(assetPath, true);
-        return true;
-    } catch (err) {
-        console.log(err)
-        return false;
-    }
-}
-
-async function handleFileWaiting(uuid) {
-    return new Promise((resolve, reject) => {
-        setTimeout(async function () {
-            resolve(await waitForDownloadSlot(uuid));
-        }, 250);
-    });
-}
-
-async function getFile(uuid, assetName) {
-    let url = 'https://backend-02-prd.' + downloader + 'api/download/transmit?uuid=' + uuid;
-    let path = __dirname + '/downloads/' + assetName + '.zip'
-
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(path);
-        let fileInfo = null;
-
-        const request = https.get(url, response => {
-            if (response.statusCode !== 200) {
-                reject(`Failed to get '${url}' (${response.statusCode})`);
-                return;
-            }
-
-            fileInfo = {
-                mime: response.headers['content-type'],
-                size: parseInt(response.headers['content-length'], 10),
-            };
-
-            response.pipe(file);
-        });
-
-        // The destination stream is ended by the time it's called
-        file.on('finish', () => resolve(fileInfo));
-
-        request.on('error', err => {
-            fs.unlink(path, () => reject(err));
-        });
-
-        file.on('error', err => {
-            fs.unlink(path, () => reject(err));
-        });
-
-        request.end();
-    }).catch(function (error) {
-        console.log(error)
-        return false;
-    });
-
-    /**
-
-     const file = fs.createWriteStream(path);
-     await https.get(url, function (res) {
-        res.pipe(file);
-    }).on('error', function (err) { // Handle errors
-        fs.unlink(path);
-        return false;
-    });
-
-     let fileDownload = new Promise (function(resolve, reject) {
-        file.on('finish', function () {
-            file.close();
-            resolve(__dirname + '/downloads/' + assetName + '.zip');
-        });
-    });
-
-     let res = await fileDownload;
-     return (res);
-     */
-}
-
-async function waitForDownloadSlot(uuid) {
-    let url = 'https://backend-02-prd.' + downloader + 'api/download/status';
-    let data = {"uuids": [uuid]};
-
-    const {body} = await got.post(url, {
-            json: data,
-            responseType: 'json'
-        }
-    );
-
-    if (body[uuid].progress === 200) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-async function getUuid(id) {
-    let url = 'https://backend-02-prd.' + downloader + 'api/download/request';
-    let data = {
-        "publishedFileId": parseInt(id),
-        "collectionId": null,
-        "extract": true,
-        "hidden": false,
-        "direct": false,
-        "autodownload": false
-    };
-
-    const {body} = await got.post(url, {
-            json: data,
-            responseType: 'json'
-        }
-    );
-
-    return body.uuid;
-}
-
-locateDownloader();
-var downloader;
-
-async function locateDownloader() {
-    var url = 'https://steamworkshopdownloader.io';
-
-    const response = await got(url);
-    downloader = response.url.replace('https://', '');
-}
