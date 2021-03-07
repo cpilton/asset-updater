@@ -5,6 +5,7 @@ html, body {
     font-family: proxima-soft, sans-serif;
     font-weight: 400;
     font-style: normal;
+    background-color: #f7f8fc;
 }
 
 #banner {
@@ -31,13 +32,8 @@ html, body {
     padding: 20px;
 }
 
-#selected-path {
-    background-color: #f7f8fc;
-    padding: 20px;
-}
-
 #assets {
-    background-color: #fff;
+    background-color: #f7f8fc;
     padding: 20px;
 }
 
@@ -46,8 +42,9 @@ html, body {
     background-color: #fff;
     padding: 20px;
     display: inline-block;
-    box-shadow: 0 3px 3px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px 1px rgb(0,0,0,0.05);
     vertical-align: top;
+    position: relative;
 }
 
 .box .header {
@@ -61,7 +58,7 @@ html, body {
 }
 
 .box#recent-folders {
-    width: calc(100% - 435px);
+    width: calc(100% - 410px);
     height: 125px;
 }
 
@@ -72,6 +69,15 @@ button {
     padding: 6px 11px;
     cursor: pointer;
     color: #333;
+    text-align: center;
+    transition: .2s;
+}
+
+button:disabled {
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
+    cursor: default;
 }
 
 button#check-folder {
@@ -121,6 +127,7 @@ input[type="text"]:focus {
     vertical-align: top;
     background-position: center;
     background-repeat: no-repeat;
+    background-size: 100%;
 }
 
 #folder-icon {
@@ -152,6 +159,7 @@ input[type="text"]:focus {
 
 #selected-path-box {
     width: calc(100% - 40px);
+    margin-top: 20px;
 }
 
 #pathname {
@@ -215,4 +223,191 @@ input[type="text"]:focus {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+#assets-count, #assets-progress, #assets-summary {
+    height: 24px;
+}
+
+#assets-count {
+    margin-right: 20px;
+    margin-bottom: 20px;
+    width: 200px;
+}
+
+#assets-summary {
+    margin-left: 20px;
+    width: 200px;
+}
+
+#assets-progress {
+    width: calc(100% - 570px);
+}
+
+#assets-count div, #assets-summary div, #assets-progress div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#game-icon {
+    background-image: url("/img/game.svg");
+    margin-right: 10px;
+}
+
+#update-icon {
+    background-image: url("/img/update.svg");
+    margin-right: 10px;
+}
+
+#logo {
+    background-image: url("/img/logo.svg");
+    margin-right: 10px;
+    height: 35px;
+    width: 35px;
+    background-size: 75%;
+}
+
+.progress {
+    height: 20px;
+    background-color: #f7f8fc;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: transparent;
+    transition: .5s;
+}
+
+.progress-bar-background {
+    height: 100%;
+    width: 100vw;
+    max-width: calc(1200px - 570px - 85px);
+    background-image: repeating-linear-gradient(
+            45deg,
+            #0176e7,
+            #0176e7 10px,
+            #006ad0 10px,
+            #006ad0 20px
+    );
+    animation: flow 20s linear infinite;
+    background-size: 200% 200%;
+    animation-direction: reverse;
+    opacity: 1;
+    transition: .5s;
+}
+
+.progress-bar[style="width: 100%;"] {
+    background-color: #32BEA6;
+}
+.progress-bar[style="width: 100%;"] .progress-bar-background {
+    opacity: 0;
+}
+
+@keyframes flow {
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+#progress-text {
+    width: 75px;
+}
+
+#check-progress {
+    width: calc(100% - 85px);
+    margin: 2px 0;
+}
+
+.update-asset {
+    height: 24px;
+    padding: 10px;
+    box-shadow: 0 1px 3px 1px rgb(0,0,0,0.05);
+    border-radius: 5px;
+    margin-top:10px;
+}
+
+.update-asset div {
+    display: inline-block;
+}
+
+.update-asset .icon {
+    background-image: url("/img/game.svg");
+    margin-right: 10px;
+    background-size: 80%;
+}
+
+.update-asset .asset-name {
+    vertical-align: top;
+    display: inline-block;
+    margin-right: 10px;
+    width: 90px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.update-asset button {
+    width: 65px;
+    margin-left: 10px;
+    vertical-align: top;
+    height: 24px;
+    line-height: 12px;
+}
+
+#update-all {
+    height: 24px;
+    line-height: 12px;
+    position: absolute;
+    top:20px;
+    right:20px;
+}
+
+.update-asset .progress {
+    width: calc(100% - 211px);
+    margin: 2px 0;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dashed #eee;
+    overflow: visible !important;
+    cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: #FFF;
+    color: #222;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px 2px rgb(0, 0, 0, 0.15);
+    position: absolute;
+    z-index: 1;
+
+    width: fit-content;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.tooltip .tooltiptext::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: #FFF transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

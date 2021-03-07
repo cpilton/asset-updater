@@ -106,5 +106,8 @@ dist
 # idea
 .idea
 
-#history
+# automation
+.automation
+
+# history
 history.json
