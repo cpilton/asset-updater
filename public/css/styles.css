@@ -18,7 +18,30 @@ html, body {
 }
 
 #banner .header {
-    padding: 7.5px 20px
+    padding: 7.5px 20px;
+    display: inline-block;
+}
+
+#nav {
+    display: inline-block;
+    font-size: 18px;
+    vertical-align: top;
+}
+
+#nav div:first-of-type {
+    margin-left: 50px;
+}
+
+#nav div {
+    display: inline-block;
+    margin: 3px 10px;
+    vertical-align: top;
+    color: #eee;
+    cursor: pointer;
+}
+
+#nav div:hover {
+    color: #acd;
 }
 
 .container {
@@ -304,6 +327,9 @@ input[type="text"]:focus {
 .progress-bar[style="width: 100%;"] {
     background-color: #32BEA6;
 }
+.progress-bar[style="width: 100%;"].failed {
+    background-color: #DD2C00;
+}
 .progress-bar[style="width: 100%;"] .progress-bar-background {
     opacity: 0;
 }
@@ -352,7 +378,7 @@ input[type="text"]:focus {
 }
 
 .update-asset button {
-    width: 65px;
+    width: 85px;
     margin-left: 10px;
     vertical-align: top;
     height: 24px;
@@ -368,7 +394,7 @@ input[type="text"]:focus {
 }
 
 .update-asset .progress {
-    width: calc(100% - 211px);
+    width: calc(100% - 231px);
     margin: 2px 0;
 }
 
@@ -410,4 +436,26 @@ input[type="text"]:focus {
 
 .tooltip:hover .tooltiptext {
     visibility: visible;
+}
+
+#downloads, #complete-downloads, #failed-downloads {
+    width: calc((100% / 3) - 60px);
+    display: inline-block;
+    margin-right: 20px;
+}
+
+#failed-downloads {
+    margin-right: 0;
+}
+
+.failed-asset .icon {
+    background-image: url("/img/close.svg");
+    margin-right: 10px;
+    background-size: 80%;
+}
+
+.complete-asset .icon {
+    background-image: url("/img/check.svg");
+    margin-right: 10px;
+    background-size: 80%;
 }

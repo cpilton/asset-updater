@@ -2,6 +2,9 @@ let updates = 0;
 let assets = 0;
 let assetsChecked = 0;
 
+let assetList = [];
+let dependencyList = [];
+
 var socket = io();
 
 socket.on('progressUpdate', function(data) {
@@ -41,18 +44,23 @@ function checkForAssets(path) {
 }
 
 function checkForUpdate(assetId) {
-    postURL('/api/checkForUpdate/', {id: assetId})
+    if (assetList.indexOf(assetId) === -1) {
+        assetList.push(assetId);
+    }
+
+    postURL('/api/checkForDependencies/', {id: assetId})
         .then(function (res) {
             if (res && res.status === 200) {
                 updateAsset(assetId, res.data);
+                renderDependency(res.data.dependencies);
             } else {
                 notify('Failed to check for update');
             }
         });
 }
 
-function startUpdate(assetId, path, assetName) {
-    postURL('/api/downloadAsset/'+assetId, {path: path, name: assetName})
+function downloadAsset(assetId) {
+    postURL('/api/downloadAsset/'+assetId)
         .then(function (res) {
             if (res == undefined || res.status !== 200) {
                 notify('Failed to update ' + assetId);
@@ -179,62 +187,48 @@ function updateAsset(asset, data) {
         $('#selection button').prop('disabled', true);
     }
 
-    if (data.updateTime !== undefined) {
+    if (data.dependencies !== undefined) {
         $('#' + asset).attr('icon', 'check');
-
-        let updateDate = $('#' + asset).attr('updatedate');
-        updateDate = new Date(updateDate).getTime();
-
-        let update = new Date(data.updateTime).getTime();
-
-
-        if (update > updateDate) {
-            updateUpdateCount(updates = updates + 1);
-            addToUpdateList(asset, data.updateTime)
-        }
-
     } else {
         $('#' + asset).attr('icon', 'close');
     }
 }
 
-function addToUpdateList(assetId, updateDate) {
+function renderDependency(dependencies) {
 
-    if ($('#update-assets-content').text() === 'No assets') {
-        let button = '<button onclick="updateAll()" id="update-all">Update all</button>';
-        $('#update-assets-content').html(button);
-    }
+    $(dependencies).each(function() {
+        if (dependencyList.indexOf(this.toString()) === -1 && assetList.indexOf(this.toString()) === -1) {
+            dependencyList.push(this.toString());
+            updateUpdateCount(updates = updates + 1);
 
-    let assetName = $('#' + assetId + ' .asset-name').text();
-    let assetHTML = '';
+            if ($('#update-assets-content').text() === 'No assets') {
+                let button = '<button onclick="updateAll()" id="update-all">Download all</button>';
+                $('#update-assets-content').html(button);
+            }
 
-    assetHTML += '<div class="update-asset" id="update-' + assetId + '">';
-    assetHTML += '<div class="icon"></div>';
+            let assetName = $('#' + this + ' .asset-name').text();
+            let assetHTML = '';
 
-    assetHTML += '<div class="asset-name tooltip">' + assetId;
-    assetHTML += '<span class="tooltiptext">';
-    assetHTML += '<b>'+assetName+'</b><br/>';
-    assetHTML += 'Updated: ' + timeSince(new Date(updateDate)) + ' ago';
-    assetHTML += '</span>';
-    assetHTML += '</div>';
+            assetHTML += '<div class="update-asset" id="update-' + this + '">';
+            assetHTML += '<div class="icon"></div>';
 
-    assetHTML += '<div class="progress">';
-    assetHTML += '<div class="progress-bar">';
-    assetHTML += '<div class="progress-bar-background"></div>';
-    assetHTML += '</div>';
-    assetHTML += '</div>';
+            assetHTML += '<div class="asset-name">' + this;
 
-    assetHTML += '<button onclick="update(\'' + assetId + '\')">Update</button>';
+            assetHTML += '</div>';
 
-    assetHTML += '</div>';
+            assetHTML += '<div class="progress">';
+            assetHTML += '<div class="progress-bar">';
+            assetHTML += '<div class="progress-bar-background"></div>';
+            assetHTML += '</div>';
+            assetHTML += '</div>';
 
-    $('#update-assets-content').append(assetHTML);
-}
+            assetHTML += '<button onclick="downloadAsset(\'' + this + '\')">Download</button>';
 
-function update(assetId) {
-    let path = $('#' + assetId).attr('path');
-    let assetName =  $('#' + assetId).attr('pathname');
-    startUpdate(assetId, path, assetName);
+            assetHTML += '</div>';
+
+            $('#update-assets-content').append(assetHTML);
+        }
+    });
 }
 
 function updateAll () {
@@ -242,7 +236,7 @@ function updateAll () {
         let assetId = $(this).attr('id').split('-')[1];
         let path = $('#' + assetId).attr('path');
         let assetName = $('#' + assetId).attr('pathname');
-        startUpdate(assetId, path, assetName);
+        downloadAsset($(this).attr('id').split('-')[1]);
     });
 }
 

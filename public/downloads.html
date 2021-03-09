@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://use.typekit.net/zkj5rjc.css">
+    <link href="css/styles.css" rel="stylesheet" type="text/css">
+    <link rel="preload" as="image" href="img/close.svg">
+    <link rel="preload" as="image" href="img/check.svg">
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/global.js"></script>
+    <script src="js/downloads.js"></script>
+    <title>Asset Updater</title>
+</head>
+<body>
+<div id="banner">
+    <div class="container">
+        <div class="header">
+            <div class="icon" id="logo"></div>
+            Asset Updater
+            <div id="nav">
+                <div class="active" onclick="openTab('')">Updates</div>
+                <div class="active">Downloads</div>
+                <div onclick="openTab('dependencies')">Dependencies</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="assets">
+    <div class="container">
+        <div class="box" id="downloads">
+            <div class="header">Active</div>
+            <div id="download-list">No active downloads</div>
+        </div>
+        <div class="box" id="complete-downloads">
+            <div class="header">Complete</div>
+            <div id="complete-download-list">No complete downloads</div>
+        </div>
+        <div class="box" id="failed-downloads">
+            <div class="header">Failed</div>
+            <div id="failed-download-list">No failed downloads</div>
+        </div>
+    </div>
+</div>
+
+<div id="notify">
+    <div id="notify-message"></div>
+</div>
+</body>
+</html>

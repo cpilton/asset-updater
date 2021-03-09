@@ -40,13 +40,16 @@ let connections = 0;
 
 io.on('connection', function(socket){
     connections++;
+    clearTimeout(stopServerCountdown)
     socket.on('disconnect', function(){
         connections--;
         if (connections === 0) {
-            stopServer();
+           //stopServerCountdown = setTimeout(function() {stopServer()},5000);
         }
     });
 });
+
+let stopServerCountdown;
 
 var sockets = {}, nextSocketId = 0;
 server.on('connection', function (socket) {
@@ -75,6 +78,16 @@ function stopServer() {
 
 
 /** Functions */
+
+function randomString(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 
 async function removeExistingFile(path) {
     try {
@@ -130,6 +143,7 @@ async function getFile(uuid, assetName) {
             fileInfo = {
                 mime: response.headers['content-type'],
                 size: parseInt(response.headers['content-length'], 10),
+                fileName: response.headers['content-disposition'].split('filename=')[1]
             };
 
             response.pipe(file);
@@ -201,10 +215,29 @@ async function locateDownloader() {
     downloader = response.url.replace('https://', '');
 }
 
+async function getDependencies(url) {
+    try {
+        const response = await got(url, {resolveBodyOnly: true, retry: 3, CacheableLookup: true, responseType: 'text'});
+        const html = response;
+        const $ = cheerio.load(html);
+
+        let dependencies = [];
+
+        $('.requiredItemsContainer a').each(function () {
+            dependencies.push($(this).attr('href').split('?id=')[1]);
+        });
+
+        return {status: 200, dependencies: dependencies};
+    } catch (e) {
+        console.log(e)
+        return {status: 500}
+    }
+}
+
 async function getUpdateDate(url) {
     try {
-        const response = await got(url);
-        const html = response.body;
+        const response = await got(url, {resolveBodyOnly: true, retry: 3, CacheableLookup: true, responseType: 'text'});
+        const html = response;
         const $ = cheerio.load(html);
 
         let lastUpdate = ($('.changelog').first().text());
@@ -296,6 +329,14 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/updater.html');
 });
 
+app.get('/downloads', function (req, res) {
+    res.sendFile(__dirname + '/public/downloads.html');
+});
+
+app.get('/dependencies', function (req, res) {
+    res.sendFile(__dirname + '/public/dependencies.html');
+});
+
 app.get("/api/getHistory/", function (req, res) {
     if (fs.existsSync(historyFilePath)) {
         res.json(JSON.parse(fs.readFileSync(historyFilePath, 'utf8')));
@@ -336,29 +377,37 @@ app.post("/api/checkPath/", function (req, res) {
     }
 });
 
-
 app.post("/api/checkForUpdate/", async function (req, res) {
     let id = req.body.id;
     let url = 'https://steamcommunity.com/sharedfiles/filedetails/changelog/' + id;
-    let retries = 0, data = {status: 0};
 
-    do {
-        data = await getUpdateDate(url);
-        status = data.status;
-    } while (data.status !== 200 || retries >= 3)
+    let data = await getUpdateDate(url);
 
     res.json({updateTime: data.date});
 });
 
-app.post("/api/updateAsset/", async function (req, res) {
+app.post("/api/checkForDependencies/", async function (req, res) {
     let id = req.body.id;
-    let path = req.body.path;
-    let assetName = req.body.name;
+    let url = 'https://steamcommunity.com/sharedfiles/filedetails/?id=' + id;
+
+    let data = await getDependencies(url);
+
+    res.json({dependencies: data.dependencies});
+});
+
+app.post("/api/downloadAsset/:id", async function (req, res) {
+    let id = req.params.id;
+    let path = req.body.path || 'D:\\Downloads';
+    let assetName = 'temp_' + randomString(16);
     let fileReady = false;
+
+    io.sockets.emit('progressUpdate', {id: id, progress: 0, success: true});
 
     let uuid = await getUuid(id);
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 10});
+    res.json({status: 200});
+
+    io.sockets.emit('progressUpdate', {id: id, progress: 10, success: true});
 
     fileReady = await waitForDownloadSlot(uuid);
     let retries = 0;
@@ -370,42 +419,51 @@ app.post("/api/updateAsset/", async function (req, res) {
     }
 
     if (!fileReady) {
-        res.sendStatus(500);
+        io.sockets.emit('progressUpdate', {id: id, progress: 10, success: false});
         return;
     }
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 45});
+    io.sockets.emit('progressUpdate', {id: id, progress: 45, success: true});
 
     let downloadPath = await getFile(uuid, assetName);
     downloadPath.path = __dirname + '/downloads/' + assetName + '.zip';
 
     if (downloadPath.mime === undefined) {
-        res.sendStatus(500);
+        io.sockets.emit('progressUpdate', {id: id, progress: 45, success: false});
         return;
     }
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 80});
+    io.sockets.emit('progressUpdate', {id: id, progress: 80, name: downloadPath.fileName, success: true});
 
-    if (!await removeExistingFolder(path)) {
-        res.sendStatus(500);
+    let removePath = path;
+    if (path === 'D:\\Downloads') {
+        removePath =  path + '/' + downloadPath.fileName.replace('.zip','');
+    }
+
+    if (!await removeExistingFolder(removePath)) {
+        io.sockets.emit('progressUpdate', {id: id, progress: 80, success: false});
         return;
     }
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 85});
+    io.sockets.emit('progressUpdate', {id: id, progress: 85, success: true});
 
-    if (!await extractFile(downloadPath.path, path)) {
-        res.sendStatus(500);
+    if (path.indexOf(id) !== -1) {
+        path = path.split('\\');
+        path.pop();
+        path = path.join('\\');
+    }
+
+    if (!await extractFile(downloadPath.path, path + '/' + downloadPath.fileName.replace('.zip',''))) {
+        io.sockets.emit('progressUpdate', {id: id, progress: 85, success: false});
         return;
     }
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 90});
+    io.sockets.emit('progressUpdate', {id: id, progress: 90, success: true});
 
     if (!await removeExistingFile(downloadPath.path)) {
-        res.sendStatus(500);
+        io.sockets.emit('progressUpdate', {id: id, progress: 90, success: false});
         return;
     }
 
-    io.sockets.emit('progressUpdate', {id: id, progress: 100});
-
-    res.json({status: 200});
+    io.sockets.emit('progressUpdate', {id: id, progress: 100, success: true});
 });

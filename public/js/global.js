@@ -69,3 +69,38 @@ function timeSince(date) {
     else
         return Math.floor(interval) + " seconds";
 }
+
+function notify(message) {
+    resetNotify();
+    $('#notify-message').html(message);
+    setTimeout(function () {
+        showNotify();
+    }, 10);
+
+    setTimeout(function () {
+        hideNotify();
+    }, 5000)
+}
+
+function showNotify() {
+    $('#notify').show();
+    setTimeout(function () {
+        $('#notify').css('top', '50px');
+    }, 10);
+}
+
+function hideNotify() {
+    $('#notify').fadeOut(500);
+    setTimeout(function () {
+        $('#notify').css('top', '-100px');
+    }, 350);
+}
+
+function resetNotify() {
+    $('#notify').hide();
+    $('#notify').css('top', '-100px');
+}
+
+function openTab(tab) {
+    window.location.href = '/' + tab;
+}

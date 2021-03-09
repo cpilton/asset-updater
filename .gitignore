@@ -107,7 +107,7 @@ dist
 .idea
 
 # automation
-.automation
+automation
 
 # history
 history.json
