@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "nodemon server.js",
-    "start": "node server.js"
+    "test": "set PORT=4001 && nodemon server.js",
+    "start": "set PORT=3001 && forever start server.js"
   },
   "author": "",
   "license": "ISC",

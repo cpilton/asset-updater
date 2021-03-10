@@ -12,7 +12,10 @@ socket.on('progressUpdate', function(data) {
     if (data.success) {
         updateProgressBar(data.id, data.progress);
         if (data.progress === 100) {
-            addToComplete(data.id);
+            setTimeout(function() {
+                addToComplete(data.id);
+            },1000);
+
         }
     } else {
         failUpdate(data.id);
