@@ -104,3 +104,7 @@ function resetNotify() {
 function openTab(tab) {
     window.location.href = '/' + tab;
 }
+
+function openLink(link) {
+    window.open(link);
+}

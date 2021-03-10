@@ -4,7 +4,7 @@ let assetsChecked = 0;
 
 var socket = io();
 
-socket.on('progressUpdate', function(data) {
+socket.on('progressUpdate', function (data) {
     if (data.success) {
         updateProgressBar('update-' + data.id, data.progress);
         if (data.progress === 100) {
@@ -52,7 +52,7 @@ function checkForUpdate(assetId) {
 }
 
 function startUpdate(assetId, path, assetName) {
-    postURL('/api/downloadAsset/'+assetId, {path: path, name: assetName})
+    postURL('/api/downloadAsset/' + assetId, {path: path, name: assetName})
         .then(function (res) {
             if (res == undefined || res.status !== 200) {
                 notify('Failed to update ' + assetId);
@@ -151,7 +151,7 @@ function renderAssets(assets) {
         assetName = assetName.replace(regex, `$1.`);
 
         assetHTML += '<div class="asset" id="' + assetId + '" updatedate="' + this.updateDate + '" icon="loading"' +
-            ' path="' + this.folder + '" pathname="'+assetPathName+'">';
+            ' path="' + this.folder + '" pathname="' + assetPathName + '">';
         assetHTML += '<div class="icon"></div>';
         assetHTML += '<div class="asset-name">' + assetName + '</div>';
 
@@ -211,9 +211,10 @@ function addToUpdateList(assetId, updateDate) {
     assetHTML += '<div class="update-asset" id="update-' + assetId + '">';
     assetHTML += '<div class="icon"></div>';
 
-    assetHTML += '<div class="asset-name tooltip">' + assetId;
+    assetHTML += '<div class="asset-name tooltip"' +
+        ' onclick="openLink(\'https://steamcommunity.com/sharedfiles/filedetails/?id=' + assetId + '\')">' + assetId;
     assetHTML += '<span class="tooltiptext">';
-    assetHTML += '<b>'+assetName+'</b><br/>';
+    assetHTML += '<b>' + assetName + '</b><br/>';
     assetHTML += 'Updated: ' + timeSince(new Date(updateDate)) + ' ago';
     assetHTML += '</span>';
     assetHTML += '</div>';
@@ -233,12 +234,12 @@ function addToUpdateList(assetId, updateDate) {
 
 function update(assetId) {
     let path = $('#' + assetId).attr('path');
-    let assetName =  $('#' + assetId).attr('pathname');
+    let assetName = $('#' + assetId).attr('pathname');
     startUpdate(assetId, path, assetName);
 }
 
-function updateAll () {
-    $('.update-asset').each(function() {
+function updateAll() {
+    $('.update-asset').each(function () {
         let assetId = $(this).attr('id').split('-')[1];
         let path = $('#' + assetId).attr('path');
         let assetName = $('#' + assetId).attr('pathname');

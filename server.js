@@ -204,13 +204,14 @@ async function getDependencies(url) {
         const html = response;
         const $ = cheerio.load(html);
 
-        let dependencies = [];
+        let dependencies = {};
 
         $('.requiredItemsContainer a').each(function () {
-            dependencies.push($(this).attr('href').split('?id=')[1]);
+           // dependencies.push($(this).attr('href').split('?id=')[1]);
+            dependencies[$(this).attr('href').split('?id=')[1]] = $(this).children('.requiredItem').text().trim();
         });
 
-        return {status: 200, dependencies: dependencies};
+        return {status: 200, dependencies};
     } catch (e) {
         console.log(e)
         return {status: 500}

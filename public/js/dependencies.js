@@ -7,7 +7,7 @@ let dependencyList = [];
 
 var socket = io();
 
-socket.on('progressUpdate', function(data) {
+socket.on('progressUpdate', function (data) {
     if (data.success) {
         updateProgressBar('update-' + data.id, data.progress);
         if (data.progress === 100) {
@@ -52,7 +52,7 @@ function checkForUpdate(assetId) {
         .then(function (res) {
             if (res && res.status === 200) {
                 updateAsset(assetId, res.data);
-                renderDependency(res.data.dependencies);
+                renderDependency(res.data.dependencies, assetId);
             } else {
                 notify('Failed to check for update');
             }
@@ -60,7 +60,7 @@ function checkForUpdate(assetId) {
 }
 
 function downloadAsset(assetId) {
-    postURL('/api/downloadAsset/'+assetId)
+    postURL('/api/downloadAsset/' + assetId)
         .then(function (res) {
             if (res == undefined || res.status !== 200) {
                 notify('Failed to update ' + assetId);
@@ -159,7 +159,7 @@ function renderAssets(assets) {
         assetName = assetName.replace(regex, `$1.`);
 
         assetHTML += '<div class="asset" id="' + assetId + '" updatedate="' + this.updateDate + '" icon="loading"' +
-            ' path="' + this.folder + '" pathname="'+assetPathName+'">';
+            ' path="' + this.folder + '" pathname="' + assetPathName + '">';
         assetHTML += '<div class="icon"></div>';
         assetHTML += '<div class="asset-name">' + assetName + '</div>';
 
@@ -194,45 +194,63 @@ function updateAsset(asset, data) {
     }
 }
 
-function renderDependency(dependencies) {
+function renderDependency(dependencies, dependant) {
 
-    $(dependencies).each(function() {
-        if (dependencyList.indexOf(this.toString()) === -1 && assetList.indexOf(this.toString()) === -1) {
-            dependencyList.push(this.toString());
-            updateUpdateCount(updates = updates + 1);
+    for (var dependency in dependencies) {
+        if (dependencies.hasOwnProperty(dependency)) {
+            if (dependencyList.indexOf(dependency.toString()) === -1 && assetList.indexOf(dependency.toString()) === -1) {
+                dependencyList.push(dependency.toString());
+                updateUpdateCount(updates = updates + 1);
 
-            if ($('#update-assets-content').text() === 'No assets') {
-                let button = '<button onclick="updateAll()" id="update-all">Download all</button>';
-                $('#update-assets-content').html(button);
+                if ($('#update-assets-content').text() === 'No assets') {
+                    let button = '<button onclick="updateAll()" id="update-all">Download all</button>';
+                    $('#update-assets-content').html(button);
+                }
+
+                let assetHTML = '';
+
+                assetHTML += '<div class="update-asset" id="update-' + dependency + '">';
+                assetHTML += '<div class="icon"></div>';
+
+                assetHTML += '<div class="asset-name tooltip"' +
+                    ' onclick="openLink(\'https://steamcommunity.com/sharedfiles/filedetails/?id=' + dependency + '\')">' + dependency;
+                assetHTML += '<span class="tooltiptext">';
+                assetHTML += '<b>' + dependencies[dependency] + '</b><br/>';
+                assetHTML += 'Used by: ' + $('#' + dependant + ' .asset-name').text();
+                assetHTML += '<span class="extra"></span>';
+                assetHTML += '<span class="number"></span>';
+                assetHTML += '<span class="extra2"></span>';
+                assetHTML += '</span>';
+                assetHTML += '</div>';
+
+                assetHTML += '<div class="progress">';
+                assetHTML += '<div class="progress-bar">';
+                assetHTML += '<div class="progress-bar-background"></div>';
+                assetHTML += '</div>';
+                assetHTML += '</div>';
+
+                assetHTML += '<button onclick="downloadAsset(\'' + dependency + '\')">Download</button>';
+
+                assetHTML += '</div>';
+
+                $('#update-assets-content').append(assetHTML);
+            } else if (dependencyList.indexOf(dependency.toString()) !== -1) {
+                let extras = 0;
+                if ($('#update-' + dependency + ' .number').text().length !== 0) {
+                    extras = +$('#update-' + dependency + ' .number').text();
+                }
+                extras = extras + 1;
+
+                $('#update-' + dependency + ' .extra').text(', plus ');
+                $('#update-' + dependency + ' .number').text(extras.toString());
+                $('#update-' + dependency + ' .extra2').text(' other(s)');
             }
-
-            let assetName = $('#' + this + ' .asset-name').text();
-            let assetHTML = '';
-
-            assetHTML += '<div class="update-asset" id="update-' + this + '">';
-            assetHTML += '<div class="icon"></div>';
-
-            assetHTML += '<div class="asset-name">' + this;
-
-            assetHTML += '</div>';
-
-            assetHTML += '<div class="progress">';
-            assetHTML += '<div class="progress-bar">';
-            assetHTML += '<div class="progress-bar-background"></div>';
-            assetHTML += '</div>';
-            assetHTML += '</div>';
-
-            assetHTML += '<button onclick="downloadAsset(\'' + this + '\')">Download</button>';
-
-            assetHTML += '</div>';
-
-            $('#update-assets-content').append(assetHTML);
         }
-    });
+    }
 }
 
-function updateAll () {
-    $('.update-asset').each(function() {
+function updateAll() {
+    $('.update-asset').each(function () {
         let assetId = $(this).attr('id').split('-')[1];
         let path = $('#' + assetId).attr('path');
         let assetName = $('#' + assetId).attr('pathname');
