@@ -321,6 +321,10 @@ app.get('/dependencies', function (req, res) {
     res.sendFile(__dirname + '/public/dependencies.html');
 });
 
+app.get('/duplicates', function (req, res) {
+    res.sendFile(__dirname + '/public/duplicates.html');
+});
+
 app.get("/api/getHistory/", function (req, res) {
     if (fs.existsSync(historyFilePath)) {
         res.json(JSON.parse(fs.readFileSync(historyFilePath, 'utf8')));
