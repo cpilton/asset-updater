@@ -14,9 +14,8 @@ const server = http.Server(app);
 // Initialise got & cheerio
 const got = require('got');
 const cheerio = require('cheerio');
-const stream = require("stream");
-const { promisify } = require("util");
-const pipeline = promisify(stream.pipeline);
+const {promisify} = require('util');
+const {CookieJar} = require('tough-cookie');
 
 // Initialise fs
 const fs = require('fs');
@@ -220,7 +219,12 @@ async function getDependencies(url) {
 
 async function getUpdateDate(url) {
     try {
-        const response = await got(url, {resolveBodyOnly: true, retry: 3, CacheableLookup: true, responseType: 'text'});
+
+        const cookieJar = new CookieJar();
+        const setCookie = promisify(cookieJar.setCookie.bind(cookieJar));
+        await setCookie('timezoneOffset=0,0', 'https://steamcommunity.com');
+
+        const response = await got(url, {cookieJar, resolveBodyOnly: true, retry: 3, CacheableLookup: true, responseType: 'text'});
         const html = response;
         const $ = cheerio.load(html);
 
@@ -238,13 +242,13 @@ async function getUpdateDate(url) {
             year = +lastUpdate[2];
             month = +getMonthFromString(lastUpdate[1]) - 1;
             day = +lastUpdate[0];
-            hours = +lastUpdate[3].split(':')[0] - 4;
+            hours = +lastUpdate[3].split(':')[0];
             minutes = +lastUpdate[3].split(':')[1];
         } else {
             year = +new Date().getFullYear();
             month = +getMonthFromString(lastUpdate[1]) - 1;
             day = +lastUpdate[0];
-            hours = +lastUpdate[2].split(':')[0] - 4;
+            hours = +lastUpdate[2].split(':')[0];
             minutes = +lastUpdate[2].split(':')[1];
         }
 
@@ -252,7 +256,7 @@ async function getUpdateDate(url) {
             hours += 12;
         }
 
-        return {status: 200, date: new Date(year, month, day, hours, minutes, 0, 0)};
+        return {status: 200, date: new Date(Date.UTC(year, month, day, hours, minutes, 0, 0))};
     } catch (e) {
         return {status: 500}
     }
