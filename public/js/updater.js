@@ -187,7 +187,6 @@ function updateAsset(asset, data) {
 
         let update = new Date(data.updateTime).getTime();
 
-
         if (update > updateDate) {
             updateUpdateCount(updates = updates + 1);
             addToUpdateList(asset, data.updateTime)

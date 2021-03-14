@@ -1,7 +1,7 @@
 var socket = io();
 
 socket.on('progressUpdate', function(data) {
-    if (!$('#' + data.id).length) {
+    if (data.progress === 0) {
         createAsset(data.id);
     }
 
@@ -23,6 +23,15 @@ socket.on('progressUpdate', function(data) {
     }
 });
 
+function retry(assetId) {
+    postURL('/api/downloadAsset/' + assetId)
+        .then(function (res) {
+            if (res == undefined || res.status !== 200) {
+                notify('Failed to update ' + assetId);
+            }
+        });
+}
+
 function updateProgressBar(id, value) {
     $('#' + id + ' .progress-bar').width(value + '%');
 }
@@ -33,6 +42,11 @@ function failUpdate(id) {
 }
 
 function createAsset(assetId) {
+
+    if ($('#'+assetId).length !== 0) {
+        $('#'+assetId).remove();
+    }
+
     let assetHTML = '';
 
     if ($('#download-list div').length === 0) {
@@ -79,7 +93,8 @@ function addToComplete(assetId) {
 
     assetHTML += '<div class="complete-asset" id="' + assetId + '">';
     assetHTML += '<div class="icon"></div>';
-    assetHTML += '<div class="asset-name tooltip">' + assetId;
+    assetHTML += '<div class="asset-name tooltip"' +
+        ' onclick="openLink(\'https://steamcommunity.com/sharedfiles/filedetails/?id=' + assetId + '\')">' + assetId;
     assetHTML += '<span class="tooltiptext">';
     assetHTML += '<b>'+assetName+'</b>';
     assetHTML += '</span>';
@@ -105,11 +120,13 @@ function addToFailed(assetId) {
 
     assetHTML += '<div class="failed-asset" id="' + assetId + '">';
     assetHTML += '<div class="icon"></div>';
-    assetHTML += '<div class="asset-name tooltip">' + assetId;
+    assetHTML += '<div class="asset-name tooltip"' +
+        ' onclick="openLink(\'https://steamcommunity.com/sharedfiles/filedetails/?id=' + assetId + '\')">' + assetId;
     assetHTML += '<span class="tooltiptext">';
     assetHTML += '<b>'+assetName+'</b>';
     assetHTML += '</span>';
     assetHTML += '</div>';
+    assetHTML += '<button onclick="retry(\'' + assetId + '\')">Retry</button>';
     assetHTML += '</div>';
 
     $('#failed-download-list').append(assetHTML);

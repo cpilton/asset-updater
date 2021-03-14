@@ -8,6 +8,31 @@ html, body {
     background-color: #f7f8fc;
 }
 
+::-webkit-scrollbar {
+    width: 14px;
+    height: 18px;
+}
+/* Track */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    height: 6px;
+    background-clip: padding-box;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+::-webkit-scrollbar-button {
+    width: 0;
+    height: 0;
+    display: none;
+}
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
 #banner {
     height: 50px;
     width: 100%;
@@ -448,6 +473,9 @@ input[type="text"]:focus {
     width: calc((100% / 3) - 60px);
     display: inline-block;
     margin-right: 20px;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #failed-downloads {
@@ -464,4 +492,11 @@ input[type="text"]:focus {
     background-image: url("/img/check.svg");
     margin-right: 10px;
     background-size: 80%;
+}
+
+@media only screen and (max-width: 800px) {
+    .box {
+        width: calc(100% - 40px) !important;
+        margin: 0 0 20px 0 !important;
+    }
 }

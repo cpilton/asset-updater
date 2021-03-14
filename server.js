@@ -238,13 +238,13 @@ async function getUpdateDate(url) {
             year = +lastUpdate[2];
             month = +getMonthFromString(lastUpdate[1]) - 1;
             day = +lastUpdate[0];
-            hours = +lastUpdate[3].split(':')[0] + 8;
+            hours = +lastUpdate[3].split(':')[0] - 4;
             minutes = +lastUpdate[3].split(':')[1];
         } else {
             year = +new Date().getFullYear();
             month = +getMonthFromString(lastUpdate[1]) - 1;
             day = +lastUpdate[0];
-            hours = +lastUpdate[2].split(':')[0] + 8;
+            hours = +lastUpdate[2].split(':')[0] - 4;
             minutes = +lastUpdate[2].split(':')[1];
         }
 
@@ -268,7 +268,7 @@ function getMonthFromString(mon) {
 }
 
 const getFileUpdatedDate = (path) => {
-    const stats = fs.statSync(path)
+    const stats = fs.statSync(path);
     return stats.mtime
 }
 
