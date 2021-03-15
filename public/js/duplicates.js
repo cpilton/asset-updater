@@ -158,6 +158,7 @@ function updateAsset(asset) {
 function renderDuplicate(id, paths) {
 
     let assetName = paths[0].split('\\')[paths[0].split('\\').length - 1];
+    let basePath = $('#pathname').text();
 
     if ($('#update-assets-content').text() === 'No assets') {
         $('#update-assets-content').html('');
@@ -172,7 +173,7 @@ function renderDuplicate(id, paths) {
         ' onclick="openLink(\'https://steamcommunity.com/sharedfiles/filedetails/?id=' + id + '\')">' + id;
     assetHTML += '<span class="tooltiptext">';
     assetHTML += '<b>' + assetName + '</b><br/>';
-    assetHTML += paths.join(' <br/> ');
+    assetHTML += paths.join(' <br/> ').replaceAll(basePath,'');;
     assetHTML += '</span>';
     assetHTML += '</div>';
 
